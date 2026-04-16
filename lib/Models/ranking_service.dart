@@ -8,9 +8,15 @@ class RankingService {
 
     final db = MockDatabase();
     int userRank = 42; 
-    if (db.userPoints > 1200) userRank = 1;
-    else if (db.userPoints > 1000) userRank = 2;
-    else if (db.userPoints > 890) userRank = 3;
+    if (db.userPoints > 1200){
+      userRank = 1;
+    } 
+    else if (db.userPoints > 1000){
+      userRank = 2;
+    } 
+    else if (db.userPoints > 890){
+      userRank = 3;
+    }
 
     List<RankingUser> ranking = [
       RankingUser(rank: 1, name: "Ana", apartment: "Apto 304", points: 1200),
@@ -18,17 +24,17 @@ class RankingService {
       RankingUser(rank: 3, name: "Luana", apartment: "Apto 502", points: 890),
     ];
 
-    // SE O USUÁRIO CLICAR EM "VER COMPLETO", nós adicionamos mais pessoas!
     if (isFull) {
       ranking.addAll([
         RankingUser(rank: 4, name: "Carlos", apartment: "Apto 101", points: 850),
         RankingUser(rank: 5, name: "Mariana", apartment: "Apto 405", points: 720),
         RankingUser(rank: 6, name: "João", apartment: "Apto 202", points: 610),
-        // Pode adicionar quantos quiser aqui para testar o scroll...
-      ]);
+        RankingUser(rank: 7, name: "Sofia", apartment: "Apto 503", points: 500),
+        RankingUser(rank: 8, name: "Rafael", apartment: "Apto 302", points: 450),
+        RankingUser(rank: 9, name: "Isabela", apartment: "Apto 404", points: 300),
+        RankingUser(rank: 10, name: "Gustavo", apartment: "Apto 101", points: 150),]);
     }
 
-    // Adiciona o usuário logado sempre no final
     ranking.add(
       RankingUser(
         rank: userRank,

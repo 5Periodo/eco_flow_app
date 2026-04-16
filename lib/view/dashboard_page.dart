@@ -4,6 +4,7 @@ import 'package:rec_coop_app/view/home_page.dart';
 import 'package:rec_coop_app/view/ranking_page.dart';
 //import 'package:rec_coop_app/features/coupons/coupons_page.dart';
 import 'package:rec_coop_app/view/profile_page.dart';
+import 'package:rec_coop_app/view/coupon_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -24,7 +25,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final List<Widget> screens = [
       const HomePage(), 
       const RankingPage(),
-      const Center(child: Text("Cupons", style: TextStyle(color: Colors.white))),
+      const CouponPage(),
       const ProfilePage(), 
     ];
 

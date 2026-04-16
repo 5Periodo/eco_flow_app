@@ -15,7 +15,7 @@ class MockAuthService implements IAuthService {
     
     // Lógica falsa: Se digitar esse email e senha, o login dá certo. 
     // Qualquer outra coisa vai dar "Credenciais inválidas" e a bolinha de loading para.
-    if (email == 'teste@eco.com' && password == '12345678') {
+    if (email == 'teste@gmail.com' && password == '12345678') {
       debugPrint("MOCK: Login com sucesso!");
       return true; 
     } else {

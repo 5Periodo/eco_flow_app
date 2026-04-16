@@ -126,7 +126,6 @@ class _LoginPageState extends State<LoginPage> {
                             
                             const SizedBox(height: 20),
                             
-                            // 3. AQUI ENTRA O NOSSO BOTÃO REUTILIZÁVEL!
                             PrimaryButton(
                               text: "Entrar",
                               isLoading: _controller.isLoading,
