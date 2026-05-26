@@ -27,6 +27,7 @@ class _CouponPageState extends State<CouponPage> {
         );
         if (mounted) _showSuccessModal(coupon, code);
       };
+      controller.loadCoupons();
     });
   }
 

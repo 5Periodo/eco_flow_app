@@ -12,7 +12,28 @@ class RankingPage extends StatelessWidget {
     return Consumer<RankingController>(
       builder: (context, controller, _) {
         if (controller.isLoading) {
-          return const Center(child: CircularProgressIndicator(color: AppColors.primaryButton));
+          return const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryButton));
+        }
+
+        if (controller.errorMessage != null) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.wifi_off_outlined, color: Colors.white54, size: 48),
+                const SizedBox(height: 12),
+                Text(controller.errorMessage!,
+                    style: const TextStyle(color: Colors.white54)),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed:  controller.loadRanking,
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryButton),
+                  child: const Text('Tentar novamente'),
+                ),
+              ],
+            ),
+          );
         }
 
         return Padding(
@@ -20,67 +41,68 @@ class RankingPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Cabeçalho ──
               const Row(
                 children: [
-                  Icon(Icons.emoji_events_outlined, color: AppColors.primaryButton, size: 32),
+                  Icon(Icons.emoji_events_outlined,
+                      color: AppColors.primaryButton, size: 32),
                   SizedBox(width: 12),
                   Text('Ranking do Mês',
-                      style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 6),
+              Text(
+                '${controller.rankingList.length} de ${controller.totalCount} participantes',
+                style: const TextStyle(color: Colors.white38, fontSize: 13),
+              ),
+              const SizedBox(height: 24),
+
+              // ── Lista ──
               Expanded(
                 child: Column(
                   children: [
                     Expanded(
                       child: ListView.separated(
-                        itemCount: controller.rankingList.length,
-                        separatorBuilder: (_, index) {
-                          if (index == controller.rankingList.length - 2) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16),
-                              child: Row(
-                                children: [
-                                  Expanded(child: Divider(color: Colors.white12)),
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 10),
-                                    child: Text('Sua Colocação',
-                                        style: TextStyle(color: Colors.white54, fontSize: 12)),
-                                  ),
-                                  Expanded(child: Divider(color: Colors.white12)),
-                                ],
-                              ),
-                            );
-                          }
-                          return const SizedBox(height: 12);
-                        },
-                        itemBuilder: (_, index) =>
-                            _RankingItem(user: controller.rankingList[index]),
+                        itemCount:      controller.rankingList.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
+                        itemBuilder:   (_, i) =>
+                            _RankingItem(user: controller.rankingList[i]),
                       ),
                     ),
                     const SizedBox(height: 16),
+
+                    // ── Botão expandir / recolher ──
                     TextButton(
                       onPressed: controller.toggleFullRanking,
                       style: TextButton.styleFrom(
-                        padding:         const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 14, horizontal: 32),
                         backgroundColor: AppColors.cardBackground,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            controller.isFullRanking ? 'Ocultar Ranking' : 'Ver Ranking Completo',
+                            controller.isFullRanking
+                                ? 'Ocultar'
+                                : 'Ver Ranking Completo',
                             style: const TextStyle(
-                                color: AppColors.primaryButton, fontWeight: FontWeight.bold),
+                                color:      AppColors.primaryButton,
+                                fontWeight: FontWeight.bold),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
                           Icon(
                             controller.isFullRanking
                                 ? Icons.keyboard_arrow_up
                                 : Icons.keyboard_arrow_down,
                             color: AppColors.primaryButton,
-                            size:  20,
+                            size:  18,
                           ),
                         ],
                       ),
@@ -97,76 +119,172 @@ class RankingPage extends StatelessWidget {
   }
 }
 
+// ── Item do ranking ──────────────────────────────────────────────────────────
 class _RankingItem extends StatelessWidget {
   final RankingUser user;
   const _RankingItem({required this.user});
 
-  Color get _rankColor {
-    if (user.rank == 1) return Colors.amber;
-    if (user.rank == 2) return Colors.grey.shade400;
-    if (user.rank == 3) return Colors.orange.shade300;
-    return Colors.white38;
+  Color get _medalColor {
+    return switch (user.posicao) {
+      1 => Colors.amber,
+      2 => Colors.grey.shade400,
+      3 => Colors.orange.shade300,
+      _ => Colors.white38,
+    };
   }
 
   @override
   Widget build(BuildContext context) {
+    final isTop3 = user.posicao <= 3;
+
     return Container(
-      padding:    const EdgeInsets.all(16),
+      padding:    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color:        user.isCurrentUser ? AppColors.cardBackground : Colors.transparent,
+        color:        AppColors.cardBackground,
         borderRadius: BorderRadius.circular(20),
-        border:       user.isCurrentUser ? Border.all(color: Colors.white12) : null,
+        border: isTop3
+            ? Border.all(color: _medalColor.withValues(alpha: 0.35), width: 1.5)
+            : null,
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            width:  40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: user.rank <= 3 ? _rankColor.withValues(alpha: 0.1) : Colors.transparent,
-            ),
-            child: Center(
-              child: user.rank <= 3
-                  ? Icon(Icons.emoji_events, color: _rankColor, size: 24)
-                  : Text('${user.rank}º',
+          // ── Linha principal ──
+          Row(
+            children: [
+              // Badge de posição
+              SizedBox(
+                width: 36,
+                child: Center(
+                  child: isTop3
+                      ? Icon(Icons.emoji_events, color: _medalColor, size: 26)
+                      : Text(
+                          '${user.posicao}º',
+                          style: TextStyle(
+                              color:      _medalColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize:   15),
+                        ),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Avatar com inicial
+              CircleAvatar(
+                radius:          20,
+                backgroundColor: isTop3
+                    ? _medalColor.withValues(alpha: 0.2)
+                    : Colors.white12,
+                child: Text(
+                  user.moradorNome.isNotEmpty
+                      ? user.moradorNome[0].toUpperCase()
+                      : '?',
+                  style: TextStyle(
+                      color:      isTop3 ? _medalColor : Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize:   16),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Nome + Apartamento
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.moradorNome,
+                      style: const TextStyle(
+                          color:      Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize:   15),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      'Apto ${user.apartamentoNumero}',
+                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Pontos
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${user.pontosTotal}',
+                    style: TextStyle(
+                        color:      isTop3 ? _medalColor : AppColors.primaryButton,
+                        fontWeight: FontWeight.bold,
+                        fontSize:   20),
+                  ),
+                  const Text('PTS',
                       style: TextStyle(
-                          color: _rankColor, fontWeight: FontWeight.bold, fontSize: 16)),
-            ),
+                          color:      Colors.white38,
+                          fontSize:   10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5)),
+                ],
+              ),
+            ],
           ),
-          const SizedBox(width: 16),
-          CircleAvatar(
-            backgroundColor:
-                user.isCurrentUser ? const Color(0xFF2E7D32) : Colors.white12,
-            child: Text(
-              user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+
+          // ── Linha de stats (kg + coletas) ──
+          const SizedBox(height: 10),
+          Container(
+            padding:    const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              color:        Colors.white.withValues(alpha: 0.04),
+              borderRadius: BorderRadius.circular(10),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Text(user.name,
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(user.apartment, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                _StatChip(
+                  icon:  Icons.scale_outlined,
+                  label: '${user.totalKg.toStringAsFixed(1)} kg',
+                  color: AppColors.primaryButton,
+                ),
+                Container(width: 1, height: 18, color: Colors.white12),
+                _StatChip(
+                  icon:  Icons.recycling,
+                  label: '${user.coletas} coleta${user.coletas != 1 ? 's' : ''}',
+                  color: Colors.white54,
+                ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('${user.points}',
-                  style: const TextStyle(
-                      color: AppColors.primaryButton, fontWeight: FontWeight.bold, fontSize: 20)),
-              const Text('PTS',
-                  style: TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold)),
-            ],
           ),
         ],
       ),
     );
   }
 }
+
+class _StatChip extends StatelessWidget {
+  final IconData icon;
+  final String   label;
+  final Color    color;
+
+  const _StatChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: color, size: 14),
+        const SizedBox(width: 5),
+        Text(label,
+            style: TextStyle(
+                color:      color,
+                fontSize:   12,
+                fontWeight: FontWeight.w500)),
+      ],
+    );
+  }
+}
+

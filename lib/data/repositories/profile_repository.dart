@@ -1,11 +1,11 @@
 import '../../domain/repositories/i_profile_repository.dart';
-import '../datasources/mock_profile_data_source.dart';
+import '../datasources/remote/profile_remote_data_source.dart';
 import '../models/user_profile.dart';
 
 class ProfileRepository implements IProfileRepository {
-  final MockProfileDataSource _dataSource;
-  ProfileRepository(this._dataSource);
+  final ProfileRemoteDataSource _remote;
+  ProfileRepository(this._remote);
 
   @override
-  Future<UserProfile> getProfile() => _dataSource.fetchProfile();
+  Future<UserProfile> getProfile() => _remote.fetchProfile();
 }

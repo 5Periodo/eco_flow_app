@@ -70,26 +70,28 @@ class _ProfileContent extends StatelessWidget {
               elevation: 0,
             ),
           ),
+          const SizedBox(height: 16),
+          const Text('Sair da conta', style: TextStyle(color: Colors.redAccent)),
           const SizedBox(height: 40),
-          _BalanceCard(points: user.points),
+          _BalanceCard(user: user),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: _StatCard(
-                  icon:      Icons.calendar_today,
+                  icon:      Icons.check_circle_outline,
                   iconColor: Colors.blue,
-                  value:     '${user.collectionsMonth}',
-                  label:     'COLETAS NO MÊS',
+                  value:     '${user.collectionsApproved}',
+                  label:     'COLETAS APROVADAS',
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: _StatCard(
-                  icon:      Icons.local_fire_department,
-                  iconColor: Colors.orange,
-                  value:     '${user.streakDays} dias',
-                  label:     'OFENSIVA ATUAL',
+                  icon:      Icons.recycling,
+                  iconColor: Colors.green,
+                  value:     '${user.totalCollections}',
+                  label:     'TOTAL DESCARTES',
                 ),
               ),
             ],
@@ -131,18 +133,15 @@ class _Avatar extends StatelessWidget {
 }
 
 class _BalanceCard extends StatelessWidget {
-  final int points;
-  const _BalanceCard({required this.points});
+  final UserProfile user;
+  const _BalanceCard({required this.user});
 
   @override
   Widget build(BuildContext context) {
-    String nivel      = 'Iniciante';
-    int proximoNivel  = 100;
-    if (points >= 100) { nivel = 'Engajado';   proximoNivel = 300; }
-    if (points >= 300) { nivel = 'Eco Master'; proximoNivel = 1000; }
-
-    final faltam    = proximoNivel - points;
-    final progresso = (points / proximoNivel).clamp(0.0, 1.0);
+    final faltam    = user.nextLevelPoints != null ? user.nextLevelPoints! - user.points : 0;
+    final progresso = user.nextLevelPoints != null
+        ? (user.points / user.nextLevelPoints!).clamp(0.0, 1.0)
+        : 1.0;
 
     return Container(
       width:   double.infinity,
@@ -160,7 +159,7 @@ class _BalanceCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline:       TextBaseline.alphabetic,
             children: [
-              Text('$points',
+              Text('${user.points}',
                   style: const TextStyle(
                       color: AppColors.primaryButton, fontSize: 48, fontWeight: FontWeight.bold, height: 1)),
               const SizedBox(width: 4),
@@ -179,7 +178,7 @@ class _BalanceCard extends StatelessWidget {
                     Row(children: [
                       const Icon(Icons.shield_outlined, color: AppColors.primaryButton, size: 18),
                       const SizedBox(width: 6),
-                      Text(nivel, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      Text(user.levelName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     ]),
                     Text('Faltam $faltam pts',
                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),

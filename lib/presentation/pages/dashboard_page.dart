@@ -31,18 +31,10 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      endDrawer: _buildDrawer(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation:       0,
         title: Image.asset('assets/images/logo_EcoFlow.png', height: 30),
-        actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none, color: Colors.white)),
-          Builder(builder: (ctx) => IconButton(
-            onPressed: () => Scaffold.of(ctx).openEndDrawer(),
-            icon: const Icon(Icons.menu, color: Colors.white),
-          )),
-        ],
       ),
       body:              _screens[_currentIndex],
       bottomNavigationBar: _buildBottomNav(),
@@ -63,53 +55,6 @@ class _DashboardPageState extends State<DashboardPage> {
         BottomNavigationBarItem(icon: Icon(Icons.card_giftcard),           label: 'Cupons'),
         BottomNavigationBarItem(icon: Icon(Icons.person_outline),          label: 'Perfil'),
       ],
-    );
-  }
-
-  Widget _buildDrawer(BuildContext context) {
-    // Lê nome e apartamento do ProfileController — sem hardcode
-    final profile = context.watch<ProfileController>().profile;
-    final name      = profile?.name      ?? '';
-    final apartment = profile?.apartment ?? '';
-    final initial   = name.isNotEmpty ? name[0].toUpperCase() : '?';
-
-    return Drawer(
-      backgroundColor: AppColors.cardBackground,
-      child: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 20),
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: const Color(0xFF2E7D32),
-                child: Text(initial, style: const TextStyle(color: Colors.white)),
-              ),
-              const SizedBox(width: 15),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name,      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  Text(apartment, style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 40),
-          ListTile(
-            leading: const Icon(Icons.person_outline, color: Colors.white54),
-            title:   const Text('Meu Perfil', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pop(context);
-              _onTabTapped(3);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.redAccent),
-            title:   const Text('Sair da conta', style: TextStyle(color: Colors.redAccent)),
-            onTap:   () => Navigator.pushReplacementNamed(context, AppRoutes.login),
-          ),
-        ],
-      ),
     );
   }
 }

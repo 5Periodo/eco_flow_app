@@ -6,12 +6,12 @@ class LoginController extends ChangeNotifier {
   final IAuthRepository _repository;
   LoginController(this._repository);
 
-  final formKey          = GlobalKey<FormState>();
+  final formKey           = GlobalKey<FormState>();
   final emailController    = TextEditingController();
   final passwordController = TextEditingController();
 
-  bool isLoading  = false;
-  bool isObscure  = true;
+  bool isLoading   = false;
+  bool isObscure   = true;
   String? errorMessage;
 
   void togglePasswordVisibility() {
@@ -27,12 +27,15 @@ class LoginController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final success = await _repository.login(
+      await _repository.login(
         emailController.text.trim(),
         passwordController.text,
       );
-      return success;
+      return true;
     } on AuthException catch (e) {
+      errorMessage = e.message;
+      return false;
+    } on NetworkException catch (e) {
       errorMessage = e.message;
       return false;
     } on Exception {

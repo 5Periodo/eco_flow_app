@@ -1,3 +1,7 @@
+import '../../data/models/auth_token.dart';
+
 abstract interface class IAuthRepository {
-  Future<bool> login(String email, String password);
+  Future<AuthToken> login(String email, String password);
+  Future<void> logout();
+  Future<String?> getStoredToken();
 }

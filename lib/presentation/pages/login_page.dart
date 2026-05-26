@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
-import 'package:rec_coop_app/data/datasources/mock_auth_data_source.dart';
-import 'package:rec_coop_app/data/datasources/mock_database.dart';
-import 'package:rec_coop_app/data/repositories/auth_repository.dart';
 import '../../colors/app_colors.dart';
+import '../../core/network/dio_client.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/storage/secure_storage_service.dart';
+import '../../data/datasources/remote/auth_remote_data_source.dart';
+import '../../data/repositories/auth_repository.dart';
 import '../../presentation/controllers/login_controller.dart';
 import '../../presentation/widgets/custom_text_field.dart';
 import '../../presentation/widgets/primary_button.dart';
@@ -24,9 +26,15 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-    create: (_) => LoginController(
-      AuthRepository(MockAuthDataSource(MockDatabase())),
-    ),
+      create: (_) {
+        final storage = SecureStorageService(const FlutterSecureStorage());
+        return LoginController(
+          AuthRepository(
+            AuthRemoteDataSource(DioClient.create(storage)),
+            storage,
+          ),
+        );
+      },
     child: Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -116,18 +124,6 @@ class LoginPage extends StatelessWidget {
                               onPressed: () => _handleLogin(context),
                             ),
                             const SizedBox(height: 20),
-
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text('Não tem uma conta? ', style: TextStyle(color: Colors.white70)),
-                                GestureDetector(
-                                  onTap: () => Navigator.pushNamed(context, AppRoutes.register),
-                                  child: const Text('Cadastre-se',
-                                      style: TextStyle(color: AppColors.primaryButton, fontWeight: FontWeight.bold)),
-                                ),
-                              ],
-                            ),
                           ],
                         ),
                       ),

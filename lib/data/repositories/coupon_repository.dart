@@ -1,17 +1,23 @@
 import '../../domain/repositories/i_coupon_repository.dart';
-import '../datasources/mock_coupon_data_source.dart';
+import '../datasources/remote/recompensa_remote_data_source.dart';
 import '../models/coupon.dart';
 
 class CouponRepository implements ICouponRepository {
-  final MockCouponDataSource _dataSource;
-  CouponRepository(this._dataSource);
+  final RecompensaRemoteDataSource _remote;
+  final _redeemedIds = <String>{};
+
+  CouponRepository(this._remote);
 
   @override
-  Future<List<Coupon>> getCoupons() => _dataSource.fetchCoupons();
+  Future<List<Coupon>> getCoupons() => _remote.fetchAll();
 
   @override
-  Future<String> redeemCoupon(Coupon coupon) => _dataSource.redeem(coupon);
+  Future<String> redeemCoupon(Coupon coupon) async {
+    final code = await _remote.resgatar(coupon.id);
+    _redeemedIds.add(coupon.id);
+    return code;
+  }
 
   @override
-  bool isRedeemed(String couponId) => _dataSource.checkRedeemed(couponId);
+  bool isRedeemed(String couponId) => _redeemedIds.contains(couponId);
 }

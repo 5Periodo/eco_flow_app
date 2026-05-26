@@ -1,12 +1,11 @@
 import '../../domain/repositories/i_ranking_repository.dart';
-import '../datasources/mock_ranking_data_source.dart';
+import '../datasources/remote/ranking_remote_data_source.dart';
 import '../models/ranking_user.dart';
 
 class RankingRepository implements IRankingRepository {
-  final MockRankingDataSource _dataSource;
-  RankingRepository(this._dataSource);
+  final RankingRemoteDataSource _remote;
+  RankingRepository(this._remote);
 
   @override
-  Future<List<RankingUser>> getRanking({bool isFull = false}) =>
-      _dataSource.fetchRanking(isFull: isFull);
+  Future<List<RankingUser>> getRanking() => _remote.fetchRankingMensal();
 }

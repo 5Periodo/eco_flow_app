@@ -1,97 +1,116 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import '../../data/datasources/mock_database.dart';
+import '../../core/errors/app_exceptions.dart';
+import '../../data/models/categoria_material.dart';
+import '../../domain/repositories/i_descarte_repository.dart';
 
 class HomeController extends ChangeNotifier {
-  // --- Mapa de pontos base por categoria ---
-  static const Map<String, int> _pointsMap = {
-    'Plástico': 10,
-    'Papel':     8,
-    'Vidro':    15,
-    'Metal':    12,
-    'Óleo':     20,
-    'Pilhas':   25,
-  };
+  final IDescarteRepository _repository;
+  HomeController(this._repository);
 
-  static const Map<String, double> _multiplierMap = {
-    'Sacola Pequena': 1.0,
-    'Sacola Grande':  1.5,
-    'Unidade':        0.5,
-  };
+  // Categorias carregadas da API
+  List<CategoriaMaterial> categories       = [];
+  bool                    isLoadingCats    = false;
+  String?                 categoriesError;
 
-  // Controle de estado do Modal (0: Código, 1: Foto, 2: Volume, 3: Sucesso)
-  int currentStep = 0;
+  // Estado do fluxo de descarte
+  CategoriaMaterial? selectedCategory;
+  String?            qrCodeHash;
+  final              pesoKgController = TextEditingController();
 
-  String selectedCategory  = '';
-  IconData? categoryIcon;
-  Color? categoryColor;
-  final containerCodeController = TextEditingController();
-  File? residuePhoto;
-  String? selectedVolume;
-  bool isLoading = false;
+  // 0 = QR scan (quando vem de categoria) | 0 = picker (quando vem do banner)
+  // 1 = peso  |  2 = sucesso
+  int     currentStep  = 0;
+  bool    isLoading    = false;
+  String? errorMessage;
 
-  void startCollection(String category, IconData icon, Color color) {
+  Future<void> loadCategories() async {
+    isLoadingCats   = true;
+    categoriesError = null;
+    notifyListeners();
+
+    try {
+      categories = await _repository.getCategorias();
+    } on AuthException catch (e) {
+      categoriesError = e.message;
+    } on NetworkException catch (e) {
+      categoriesError = e.message;
+    } on Exception {
+      categoriesError = 'Não foi possível carregar as categorias.';
+    } finally {
+      isLoadingCats = false;
+      notifyListeners();
+    }
+  }
+
+  // Entrada via card de categoria → passo 0 = escanear QR
+  void startFromCategory(CategoriaMaterial category) {
     selectedCategory = category;
-    categoryIcon     = icon;
-    categoryColor    = color;
+    qrCodeHash       = null;
     currentStep      = 0;
-    containerCodeController.clear();
-    residuePhoto   = null;
-    selectedVolume = null;
+    errorMessage     = null;
+    pesoKgController.clear();
     notifyListeners();
   }
 
-  void nextStep() {
-    if (currentStep < 3) {
-      currentStep++;
+  // Entrada via banner QR (QR já escaneado antes de abrir o modal)
+  // → passo 0 = escolher categoria
+  void startFromQrScan(String hash) {
+    selectedCategory = null;
+    qrCodeHash       = hash;
+    currentStep      = 0;
+    errorMessage     = null;
+    pesoKgController.clear();
+    notifyListeners();
+  }
+
+  // Chamado após o scanner retornar o hash (fluxo via card de categoria)
+  void setQrHash(String hash) {
+    qrCodeHash  = hash;
+    currentStep = 1;
+    notifyListeners();
+  }
+
+  // Chamado quando o morador escolhe a categoria (fluxo via banner QR)
+  void selectCategory(CategoriaMaterial category) {
+    selectedCategory = category;
+    currentStep      = 1;
+    notifyListeners();
+  }
+
+  Future<void> submitDescarte() async {
+    final peso = double.tryParse(pesoKgController.text.replaceAll(',', '.'));
+    if (peso == null || peso <= 0) {
+      errorMessage = 'Insira um peso válido em kg.';
+      notifyListeners();
+      return;
+    }
+
+    isLoading    = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _repository.registrarDescarte(
+        qrCodeHash:          qrCodeHash!,
+        categoriaMaterialId: selectedCategory!.id,
+        pesoKg:              peso,
+      );
+      currentStep = 2;
+    } on AuthException catch (e) {
+      errorMessage = e.message;
+    } on NetworkException catch (e) {
+      errorMessage = e.message;
+    } on Exception {
+      errorMessage = 'Erro ao registrar descarte. Tente novamente.';
+    } finally {
+      isLoading = false;
       notifyListeners();
     }
-  }
-
-  void previousStep() {
-    if (currentStep > 0) {
-      currentStep--;
-      notifyListeners();
-    }
-  }
-
-  Future<void> takePhoto() async {
-    final picker = ImagePicker();
-    final file   = await picker.pickImage(source: ImageSource.camera);
-    if (file != null) {
-      residuePhoto = File(file.path);
-      nextStep();
-    }
-  }
-
-  void setVolume(String volume) {
-    selectedVolume = volume;
-    notifyListeners();
-  }
-
-  Future<void> submitCollection() async {
-    isLoading = true;
-    notifyListeners();
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    final pontosBase    = _pointsMap[selectedCategory]    ?? 0;
-    final multiplicador = _multiplierMap[selectedVolume]  ?? 1.0;
-    final pontosGanhos  = (pontosBase * multiplicador).round();
-
-    MockDatabase().addPoints(pontosGanhos);
-
-    debugPrint('Descarte: $selectedVolume de $selectedCategory');
-    debugPrint('+$pontosGanhos pts → total: ${MockDatabase().userPoints}');
-
-    isLoading = false;
-    nextStep();
   }
 
   @override
   void dispose() {
-    containerCodeController.dispose();
+    pesoKgController.dispose();
     super.dispose();
   }
 }
