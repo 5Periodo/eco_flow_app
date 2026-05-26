@@ -1,5 +1,5 @@
 class RankingUser {
-  final int    posicao;
+  final int?   posicao;
   final String moradorNome;
   final String apartamentoNumero;
   final int    pontosTotal;
@@ -16,7 +16,7 @@ class RankingUser {
   });
 
   factory RankingUser.fromJson(Map<String, dynamic> json) => RankingUser(
-        posicao:           json['posicao']           as int,
+      posicao:           json['posicao']           as int?,
         moradorNome:       json['moradorNome']       as String,
         apartamentoNumero: json['apartamentoNumero'] as String,
         pontosTotal:       json['pontosTotal']       as int,

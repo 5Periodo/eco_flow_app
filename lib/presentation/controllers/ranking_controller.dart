@@ -11,6 +11,8 @@ class RankingController extends ChangeNotifier {
 
   List<RankingUser> _allRanking = [];
   List<RankingUser> rankingList = [];
+  List<RankingUser> get allRanking => List.unmodifiable(_allRanking);
+  RankingUser? myRanking;
 
   bool    isLoading     = false;
   bool    isFullRanking = false;
@@ -24,6 +26,11 @@ class RankingController extends ChangeNotifier {
     try {
       _allRanking = await _repository.getRanking();
       _applyFilter();
+      try {
+        myRanking = await _repository.getMyRanking();
+      } catch (_) {
+        myRanking = null;
+      }
     } on AuthException catch (e) {
       errorMessage = e.message;
     } on NetworkException catch (e) {

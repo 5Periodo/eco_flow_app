@@ -18,4 +18,14 @@ class RankingRemoteDataSource {
       throw NetworkException();
     }
   }
+
+  Future<RankingUser> fetchMeuRankingMensal() async {
+    try {
+      final response = await _dio.get('/ranking/me');
+      return RankingUser.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw AuthException();
+      throw NetworkException();
+    }
+  }
 }

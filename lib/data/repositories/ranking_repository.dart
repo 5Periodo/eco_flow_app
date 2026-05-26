@@ -8,4 +8,7 @@ class RankingRepository implements IRankingRepository {
 
   @override
   Future<List<RankingUser>> getRanking() => _remote.fetchRankingMensal();
+
+  @override
+  Future<RankingUser> getMyRanking() => _remote.fetchMeuRankingMensal();
 }

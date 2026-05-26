@@ -74,6 +74,10 @@ class _RankingPageState extends State<RankingPage> {
                 '${controller.rankingList.length} de ${controller.totalCount} participantes',
                 style: const TextStyle(color: Colors.white38, fontSize: 13),
               ),
+              if (controller.myRanking != null) ...[
+                const SizedBox(height: 16),
+                _MyRankingCard(user: controller.myRanking!),
+              ],
               const SizedBox(height: 24),
 
               // ── Lista ──
@@ -134,13 +138,93 @@ class _RankingPageState extends State<RankingPage> {
   }
 }
 
+class _MyRankingCard extends StatelessWidget {
+  final RankingUser user;
+
+  const _MyRankingCard({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primaryButton.withValues(alpha: 0.35), width: 1.2),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.primaryButton.withValues(alpha: 0.16),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              user.posicao != null ? '${user.posicao}º' : '--',
+              style: const TextStyle(
+                color: AppColors.primaryButton,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Sua posição no ranking',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  user.posicao != null
+                      ? 'Apto ${user.apartamentoNumero}'
+                      : 'Posição ainda indisponível',
+                  style: const TextStyle(color: Colors.white54, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${user.pontosTotal} pts',
+                style: const TextStyle(
+                  color: AppColors.primaryButton,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                '${user.totalKg.toStringAsFixed(1)} kg',
+                style: const TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ── Item do ranking ──────────────────────────────────────────────────────────
 class _RankingItem extends StatelessWidget {
   final RankingUser user;
   const _RankingItem({required this.user});
 
   Color get _medalColor {
-    return switch (user.posicao) {
+    return switch (user.posicao ?? 0) {
       1 => Colors.amber,
       2 => Colors.grey.shade400,
       3 => Colors.orange.shade300,
@@ -150,7 +234,7 @@ class _RankingItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isTop3 = user.posicao <= 3;
+    final isTop3 = (user.posicao ?? 0) <= 3;
 
     return Container(
       padding:    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -173,7 +257,7 @@ class _RankingItem extends StatelessWidget {
                   child: isTop3
                       ? Icon(Icons.emoji_events, color: _medalColor, size: 26)
                       : Text(
-                          '${user.posicao}º',
+                        '${user.posicao ?? 0}º',
                           style: TextStyle(
                               color:      _medalColor,
                               fontWeight: FontWeight.bold,
