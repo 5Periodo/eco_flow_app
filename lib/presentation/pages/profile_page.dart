@@ -3,9 +3,25 @@ import 'package:provider/provider.dart';
 import '../../colors/app_colors.dart';
 import '../../presentation/controllers/profile_controller.dart';
 import '../../data/models/user_profile.dart';
+import '../widgets/edit_profile_dialog.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<ProfileController>().loadProfile();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +50,42 @@ class _ProfileContent extends StatelessWidget {
   final UserProfile user;
   const _ProfileContent({required this.user});
 
+  IconData _iconForCategory(String icon) {
+    switch (icon.toLowerCase()) {
+      case 'metal':
+        return Icons.build_outlined;
+      case 'vidro':
+        return Icons.local_bar_outlined;
+      case 'plastico':
+        return Icons.delete_outline;
+      case 'papel':
+        return Icons.description_outlined;
+      case 'organico':
+        return Icons.eco_outlined;
+      default:
+        return Icons.recycling;
+    }
+  }
+
+  Color _statusColor(String status) {
+    switch (status.toUpperCase()) {
+      case 'APROVADO':
+        return Colors.greenAccent;
+      case 'PENDENTE':
+        return Colors.orangeAccent;
+      case 'NEGADO':
+        return Colors.redAccent;
+      default:
+        return Colors.white54;
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    return '$day/$month/${date.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -59,7 +111,12 @@ class _ProfileContent extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => EditProfileDialog(user: user),
+              );
+            },
             icon:  const Icon(Icons.edit, color: Colors.white, size: 18),
             label: const Text('Editar Perfil',
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -96,6 +153,118 @@ class _ProfileContent extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Histórico recente',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pushNamed(context, '/history'),
+                child: const Text(
+                  'Ver completo',
+                  style: TextStyle(color: AppColors.primaryButton, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (user.recentDescartes.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: AppColors.cardBackground,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Text(
+                'Nenhum descarte registrado ainda.',
+                style: TextStyle(color: Colors.white54),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: user.recentDescartes.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              itemBuilder: (_, index) {
+                final descarte = user.recentDescartes[index];
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBackground,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: _statusColor(descarte.status).withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _iconForCategory(descarte.categoryIcon),
+                          color: _statusColor(descarte.status),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              descarte.categoryName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${descarte.weightKg.toStringAsFixed(1)} kg • ${_formatDate(descarte.date)}',
+                              style: const TextStyle(color: Colors.white54, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '${descarte.points} pts',
+                            style: const TextStyle(
+                              color: AppColors.primaryButton,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            descarte.status,
+                            style: TextStyle(
+                              color: _statusColor(descarte.status),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );

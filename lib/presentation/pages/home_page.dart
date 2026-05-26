@@ -6,8 +6,23 @@ import '../../../data/models/categoria_material.dart';
 import '../../presentation/controllers/home_controller.dart';
 import '../../presentation/widgets/category_card.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<HomeController>().loadCategories();
+      }
+    });
+  }
 
   // Mapeia o nome da categoria para um ícone Material
   IconData _iconFor(String nome) {

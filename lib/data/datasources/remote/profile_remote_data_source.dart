@@ -15,4 +15,19 @@ class ProfileRemoteDataSource {
       throw NetworkException();
     }
   }
+
+  Future<UserProfile> updateProfile(String name, String? password) async {
+    try {
+      final data = {
+        'nome': name,
+        if (password != null && password.isNotEmpty) 'novaSenha': password,
+      };
+      final response = await _dio.patch('/moradores/meu-perfil', data: data);
+      return UserProfile.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw AuthException();
+      if (e.response?.statusCode == 400) throw ValidationException();
+      throw NetworkException();
+    }
+  }
 }

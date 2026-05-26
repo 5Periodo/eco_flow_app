@@ -4,8 +4,10 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final bool isObscure;
+  final bool? obscureText;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
+  final IconData? prefixIcon;
   final Widget? suffixIcon;
 
   const CustomTextField({
@@ -13,16 +15,20 @@ class CustomTextField extends StatelessWidget {
     required this.controller,
     required this.hintText,
     this.isObscure    = false,
+    this.obscureText,
     this.keyboardType = TextInputType.text,
     this.validator,
+    this.prefixIcon,
     this.suffixIcon,
   });
 
   @override
   Widget build(BuildContext context) {
+    final effectiveObscureText = obscureText ?? isObscure;
+
     return TextFormField(
       controller:  controller,
-      obscureText: isObscure,
+      obscureText: effectiveObscureText,
       style:       const TextStyle(color: Colors.white),
       keyboardType: keyboardType,
       decoration: InputDecoration(
@@ -35,6 +41,9 @@ class CustomTextField extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           borderSide:   BorderSide.none,
         ),
+        prefixIcon: prefixIcon == null
+            ? null
+            : Icon(prefixIcon, color: Colors.white54),
         suffixIcon: suffixIcon,
       ),
       validator: validator,

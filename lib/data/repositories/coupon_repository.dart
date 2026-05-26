@@ -1,6 +1,7 @@
 import '../../domain/repositories/i_coupon_repository.dart';
 import '../datasources/remote/recompensa_remote_data_source.dart';
 import '../models/coupon.dart';
+import '../models/reward_history.dart';
 
 class CouponRepository implements ICouponRepository {
   final RecompensaRemoteDataSource _remote;
@@ -10,6 +11,9 @@ class CouponRepository implements ICouponRepository {
 
   @override
   Future<List<Coupon>> getCoupons() => _remote.fetchAll();
+
+  @override
+  Future<List<RewardHistory>> getHistorico() => _remote.fetchHistorico();
 
   @override
   Future<String> redeemCoupon(Coupon coupon) async {

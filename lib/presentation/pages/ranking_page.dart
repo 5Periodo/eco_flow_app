@@ -4,8 +4,23 @@ import '../../colors/app_colors.dart';
 import '../../data/models/ranking_user.dart';
 import '../../presentation/controllers/ranking_controller.dart';
 
-class RankingPage extends StatelessWidget {
+class RankingPage extends StatefulWidget {
   const RankingPage({super.key});
+
+  @override
+  State<RankingPage> createState() => _RankingPageState();
+}
+
+class _RankingPageState extends State<RankingPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<RankingController>().loadRanking();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

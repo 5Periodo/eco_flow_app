@@ -8,4 +8,8 @@ class ProfileRepository implements IProfileRepository {
 
   @override
   Future<UserProfile> getProfile() => _remote.fetchProfile();
+
+  @override
+  Future<UserProfile> updateProfile(String name, String? password) =>
+      _remote.updateProfile(name, password);
 }

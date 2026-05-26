@@ -26,11 +26,13 @@ import 'presentation/controllers/coupon_controller.dart';
 import 'presentation/controllers/home_controller.dart';
 import 'presentation/controllers/profile_controller.dart';
 import 'presentation/controllers/ranking_controller.dart';
+import 'presentation/controllers/history_controller.dart';
 
 // Pages
 import 'presentation/pages/login_page.dart';
 import 'presentation/pages/dashboard_page.dart';
 import 'presentation/pages/qr_scanner_page.dart';
+import 'presentation/pages/history_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,7 +53,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => HomeController(
             DescarteRepository(DescarteRemoteDataSource(dio)),
-          )..loadCategories(),
+          ),
         ),
         ChangeNotifierProvider(
           create: (_) => CouponController(
@@ -61,12 +63,18 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => ProfileController(
             ProfileRepository(ProfileRemoteDataSource(dio)),
-          )..loadProfile(),
+          ),
         ),
         ChangeNotifierProvider(
           create: (_) => RankingController(
             RankingRepository(RankingRemoteDataSource(dio)),
-          )..loadRanking(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => HistoryController(
+            DescarteRepository(DescarteRemoteDataSource(dio)),
+            CouponRepository(RecompensaRemoteDataSource(dio)),
+          ),
         ),
       ],
       child: MaterialApp(
@@ -78,6 +86,7 @@ class MyApp extends StatelessWidget {
           AppRoutes.login:      (_) => const LoginPage(),
           AppRoutes.home:       (_) => const DashboardPage(),
           AppRoutes.qrScanner:  (_) => const QrScannerPage(),
+          AppRoutes.history:    (_) => const HistoryPage(),
         },
       ),
     );
