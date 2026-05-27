@@ -157,11 +157,11 @@ class _ProfileContent extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Align(
+              const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Histórico recente',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -196,7 +196,7 @@ class _ProfileContent extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: user.recentDescartes.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
               itemBuilder: (_, index) {
                 final descarte = user.recentDescartes[index];
                 return Container(

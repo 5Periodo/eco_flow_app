@@ -83,23 +83,65 @@ class _HomePageState extends State<HomePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        controller.selectedCategory?.nome ?? 'Selecionar Material',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              controller.flowTitle,
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              controller.flowSubtitle,
+                              style: const TextStyle(fontSize: 13, color: Colors.grey),
+                            ),
+                          ],
+                        ),
                       ),
                       IconButton(
                         icon:      const Icon(Icons.close, color: Colors.grey),
-                        onPressed: () => Navigator.pop(ctx),
+                        onPressed: () {
+                          controller.resetFlow();
+                          Navigator.pop(ctx);
+                        },
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
+
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(999),
+                    child: LinearProgressIndicator(
+                      value: controller.progressValue,
+                      minHeight: 8,
+                      backgroundColor: const Color(0xFFE8EFEA),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00C853)),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      controller.progressLabel,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
                   // ── Passos ──
                   // Passo 0a: escanear QR (veio de card de categoria)
                   if (controller.currentStep == 0 && controller.qrCodeHash == null)
                     _buildQrScanStep(ctx, controller),
+
+                  // Passo 0b: escolher categoria depois do QR (veio do banner)
+                  if (controller.currentStep == 0 && controller.qrCodeHash != null)
+                    _buildCategoryStep(controller),
 
                   // Passo 1: inserir peso
                   if (controller.currentStep == 1)
@@ -122,11 +164,18 @@ class _HomePageState extends State<HomePage> {
       Column(children: [
         const Icon(Icons.qr_code_scanner, size: 64, color: Colors.green),
         const SizedBox(height: 16),
-        const Text('Escanear Contentor',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
+        Text(
+          controller.startedFromCategory ? 'Escanear Contentor' : 'Escolha o material',
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+        ),
         const SizedBox(height: 8),
-        const Text('Aponte a câmera para o QR Code do contentor.',
-            textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+        Text(
+          controller.startedFromCategory
+              ? 'Aponte a câmera para o QR Code do contentor.'
+              : 'Toque em uma categoria para seguir com o descarte.',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.grey),
+        ),
         const SizedBox(height: 24),
         SizedBox(
           width: double.infinity,
@@ -147,6 +196,76 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ]);
+
+  Widget _buildCategoryStep(HomeController controller) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Escolha o material',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Agora selecione o tipo de resíduo para continuar.',
+            style: TextStyle(color: Colors.grey),
+          ),
+          const SizedBox(height: 18),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.15,
+            ),
+            itemCount: controller.categories.length,
+            itemBuilder: (_, i) {
+              final cat = controller.categories[i];
+              return GestureDetector(
+                onTap: () => controller.selectCategory(cat),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F7F5),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: const Color(0xFFE0E7E3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F7EE),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Icon(_iconFor(cat.nome), color: Colors.green, size: 26),
+                      ),
+                      const Spacer(),
+                      Text(
+                        cat.nome,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${cat.multiplicadorPontos.toStringAsFixed(1)}x pontos/kg',
+                        style: const TextStyle(color: Colors.black54, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      );
 
   Widget _buildWeightStep(HomeController controller) =>
       Column(children: [
@@ -227,7 +346,10 @@ class _HomePageState extends State<HomePage> {
           width:  double.infinity,
           height: 50,
           child: ElevatedButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              context.read<HomeController>().resetFlow();
+              Navigator.pop(context);
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF00C853),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -310,6 +432,16 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 30),
+
+              const Text(
+                'Ou escolha o material abaixo',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
 
               // ── Grid de categorias (da API) ──
               GridView.builder(

@@ -16,6 +16,7 @@ class HomeController extends ChangeNotifier {
   CategoriaMaterial? selectedCategory;
   String?            qrCodeHash;
   final              pesoKgController = TextEditingController();
+  bool               startedFromCategory = false;
 
   // 0 = QR scan (quando vem de categoria) | 0 = picker (quando vem do banner)
   // 1 = peso  |  2 = sucesso
@@ -46,6 +47,7 @@ class HomeController extends ChangeNotifier {
   void startFromCategory(CategoriaMaterial category) {
     selectedCategory = category;
     qrCodeHash       = null;
+    startedFromCategory = true;
     currentStep      = 0;
     errorMessage     = null;
     pesoKgController.clear();
@@ -57,6 +59,7 @@ class HomeController extends ChangeNotifier {
   void startFromQrScan(String hash) {
     selectedCategory = null;
     qrCodeHash       = hash;
+    startedFromCategory = false;
     currentStep      = 0;
     errorMessage     = null;
     pesoKgController.clear();
@@ -74,6 +77,51 @@ class HomeController extends ChangeNotifier {
   void selectCategory(CategoriaMaterial category) {
     selectedCategory = category;
     currentStep      = 1;
+    notifyListeners();
+  }
+
+  String get flowTitle {
+    if (currentStep == 2) return 'Descarte concluído';
+    if (currentStep == 1) return 'Confirme o peso';
+    return startedFromCategory ? 'Escaneie o contentor' : 'Escolha o material';
+  }
+
+  String get flowSubtitle {
+    if (currentStep == 2) return 'Seu descarte foi registrado com sucesso.';
+    if (currentStep == 1) {
+      return startedFromCategory
+          ? 'Agora informe o peso para registrar o descarte.'
+          : 'Agora escaneie o QR do contentor para continuar.';
+    }
+    return startedFromCategory
+        ? 'Primeiro, aproxime a câmera do QR Code do contentor.'
+        : 'Selecione o resíduo antes de escanear o contentor.';
+  }
+
+  double get progressValue {
+    return switch (currentStep) {
+      0 => 0.33,
+      1 => 0.66,
+      _ => 1.0,
+    };
+  }
+
+  String get progressLabel {
+    return switch (currentStep) {
+      0 => 'Etapa 1 de 3',
+      1 => 'Etapa 2 de 3',
+      _ => 'Etapa 3 de 3',
+    };
+  }
+
+  void resetFlow() {
+    selectedCategory = null;
+    qrCodeHash = null;
+    startedFromCategory = false;
+    currentStep = 0;
+    isLoading = false;
+    errorMessage = null;
+    pesoKgController.clear();
     notifyListeners();
   }
 

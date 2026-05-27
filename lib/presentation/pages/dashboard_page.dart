@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../colors/app_colors.dart';
-import '../../core/routes/app_routes.dart';
-import '../../presentation/controllers/profile_controller.dart';
 import '../../presentation/pages/home_page.dart';
 import '../../presentation/pages/ranking_page.dart';
 import '../../presentation/pages/coupon_page.dart';
