@@ -8,5 +8,6 @@ abstract interface class IDescarteRepository {
     required String qrCodeHash,
     required int categoriaMaterialId,
     required double pesoKg,
+    List<String>? fotoUrls,
   });
 }

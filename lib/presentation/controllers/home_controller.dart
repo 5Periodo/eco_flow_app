@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/errors/app_exceptions.dart';
 import '../../data/models/categoria_material.dart';
 import '../../domain/repositories/i_descarte_repository.dart';
@@ -23,6 +25,7 @@ class HomeController extends ChangeNotifier {
   int     currentStep  = 0;
   bool    isLoading    = false;
   String? errorMessage;
+  String? capturedPhotoBase64;
 
   Future<void> loadCategories() async {
     isLoadingCats   = true;
@@ -50,6 +53,7 @@ class HomeController extends ChangeNotifier {
     startedFromCategory = true;
     currentStep      = 0;
     errorMessage     = null;
+    capturedPhotoBase64 = null;
     pesoKgController.clear();
     notifyListeners();
   }
@@ -62,6 +66,7 @@ class HomeController extends ChangeNotifier {
     startedFromCategory = false;
     currentStep      = 0;
     errorMessage     = null;
+    capturedPhotoBase64 = null;
     pesoKgController.clear();
     notifyListeners();
   }
@@ -121,11 +126,34 @@ class HomeController extends ChangeNotifier {
     currentStep = 0;
     isLoading = false;
     errorMessage = null;
+    capturedPhotoBase64 = null;
     pesoKgController.clear();
     notifyListeners();
   }
 
+  Future<void> capturePhoto() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 50, // Comprime a imagem para 50%
+      maxWidth: 800,
+    );
+
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      final base64String = base64Encode(bytes);
+      capturedPhotoBase64 = 'data:image/jpeg;base64,$base64String';
+      notifyListeners();
+    }
+  }
+
   Future<void> submitDescarte() async {
+    if (capturedPhotoBase64 == null) {
+      errorMessage = 'Por favor, tire uma foto do descarte.';
+      notifyListeners();
+      return;
+    }
+
     final peso = double.tryParse(pesoKgController.text.replaceAll(',', '.'));
     if (peso == null || peso <= 0) {
       errorMessage = 'Insira um peso válido em kg.';
@@ -142,6 +170,7 @@ class HomeController extends ChangeNotifier {
         qrCodeHash:          qrCodeHash!,
         categoriaMaterialId: selectedCategory!.id,
         pesoKg:              peso,
+        fotoUrls:            capturedPhotoBase64 != null ? [capturedPhotoBase64!] : null,
       );
       currentStep = 2;
     } on AuthException catch (e) {

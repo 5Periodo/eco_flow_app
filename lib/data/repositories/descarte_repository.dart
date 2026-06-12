@@ -18,10 +18,12 @@ class DescarteRepository implements IDescarteRepository {
     required String qrCodeHash,
     required int categoriaMaterialId,
     required double pesoKg,
+    List<String>? fotoUrls,
   }) =>
       _remote.registrarDescarte(
         qrCodeHash:          qrCodeHash,
         categoriaMaterialId: categoriaMaterialId,
         pesoKg:              pesoKg,
+        fotoUrls:            fotoUrls,
       );
 }

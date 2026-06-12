@@ -37,12 +37,14 @@ class DescarteRemoteDataSource {
     required String qrCodeHash,
     required int categoriaMaterialId,
     required double pesoKg,
+    List<String>? fotoUrls,
   }) async {
     try {
       await _dio.post('/descartes/registrar', data: {
         'qrCodeHash':          qrCodeHash,
         'categoriaMaterialId': categoriaMaterialId,
         'pesoKg':              pesoKg,
+        if (fotoUrls != null) 'fotoUrls': fotoUrls,
       });
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) throw AuthException();

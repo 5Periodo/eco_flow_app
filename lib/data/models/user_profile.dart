@@ -6,6 +6,9 @@ class RecentDescarte {
   final double weightKg;
   final int points;
   final DateTime date;
+  final String? ecopointName;
+  final String? ecopointLocation;
+  final List<String> fotoUrls;
 
   const RecentDescarte({
     required this.id,
@@ -15,11 +18,17 @@ class RecentDescarte {
     required this.weightKg,
     required this.points,
     required this.date,
+    this.ecopointName,
+    this.ecopointLocation,
+    this.fotoUrls = const [],
   });
 
   factory RecentDescarte.fromJson(Map<String, dynamic> json) {
     final categoria = json['categoriaMaterial'] as Map<String, dynamic>?;
     final rawPoints = json['pontosAtribuidos'] ?? json['pontosGerados'] ?? 0;
+
+    final ecopoint = json['ecopoint'] as Map<String, dynamic>?;
+    final fotos = json['fotoUrls'] as List<dynamic>?;
 
     return RecentDescarte(
       id: json['id'] as String,
@@ -29,6 +38,9 @@ class RecentDescarte {
       weightKg: double.tryParse(json['pesoKg'].toString()) ?? 0,
       points: (rawPoints as num).toInt(),
       date: DateTime.tryParse(json['dataColeta'].toString()) ?? DateTime.now(),
+      ecopointName: ecopoint?['descricao'] as String?,
+      ecopointLocation: ecopoint?['localizacao'] as String?,
+      fotoUrls: fotos?.map((e) => e.toString()).toList() ?? [],
     );
   }
 }

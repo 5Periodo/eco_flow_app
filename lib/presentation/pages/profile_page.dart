@@ -236,6 +236,33 @@ class _ProfileContent extends StatelessWidget {
                               '${descarte.weightKg.toStringAsFixed(1)} kg • ${_formatDate(descarte.date)}',
                               style: const TextStyle(color: Colors.white54, fontSize: 12),
                             ),
+                            if (descarte.ecopointName != null) ...[
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(Icons.location_on, color: Colors.white54, size: 12),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      descarte.ecopointName!,
+                                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            if (descarte.fotoUrls.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  const Icon(Icons.camera_alt_outlined, color: AppColors.primaryButton, size: 14),
+                                  const SizedBox(width: 4),
+                                  const Text('Com foto anexada', style: TextStyle(color: AppColors.primaryButton, fontSize: 11)),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),

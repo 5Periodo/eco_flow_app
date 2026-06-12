@@ -285,6 +285,38 @@ class _HomePageState extends State<HomePage> {
           style: const TextStyle(color: Colors.grey, fontSize: 13),
         ),
         const SizedBox(height: 24),
+        InkWell(
+          onTap: controller.capturePhoto,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: BoxDecoration(
+              color: controller.capturedPhotoBase64 != null ? Colors.green.shade50 : const Color(0xFFF4F7F5),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: controller.capturedPhotoBase64 != null ? Colors.green : const Color(0xFFE0E7E3)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  controller.capturedPhotoBase64 != null ? Icons.check_circle : Icons.camera_alt,
+                  color: controller.capturedPhotoBase64 != null ? Colors.green : Colors.black54,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  controller.capturedPhotoBase64 != null ? 'Foto anexada com sucesso!' : 'Tirar foto do descarte',
+                  style: TextStyle(
+                    color: controller.capturedPhotoBase64 != null ? Colors.green : Colors.black87,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         TextField(
           controller:  controller.pesoKgController,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
